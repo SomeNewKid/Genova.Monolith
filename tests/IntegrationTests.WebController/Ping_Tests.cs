@@ -7,9 +7,9 @@ using Genova.ContentService.Protos;
 
 namespace IntegrationTests.WebController;
 
-public class PingTests : WebControllerTestBase {
+public class Ping_Tests : TestBase {
 
-    public PingTests(WebApplicationFactory<Program> factory) : base(factory) { }
+    public Ping_Tests(WebApplicationFactory<Program> factory) : base(factory) { }
 
     [Fact]
     public async Task Ping_should_return_success_message_for_WebController() 

@@ -1,8 +1,8 @@
-﻿using Genova.SecurityService;
+﻿using Genova.WebController;
 
-namespace UnitTests.SecurityService;
+namespace UnitTests.WebController;
 
-public class ProgramTests
+public class Program_Tests
 {
     [Fact]
     public void Can_create_an_instance_of_Program()

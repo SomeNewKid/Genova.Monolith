@@ -7,11 +7,11 @@ using Genova.SecurityService.Protos;
 
 namespace IntegrationTests.SecurityService;
 
-public class PingTests : IClassFixture<WebApplicationFactory<Program>>
+public class Ping_Tests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
 
-    public PingTests(WebApplicationFactory<Program> factory)
+    public Ping_Tests(WebApplicationFactory<Program> factory)
     {
         _factory = factory;
     }

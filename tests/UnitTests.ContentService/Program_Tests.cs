@@ -2,7 +2,7 @@
 
 namespace UnitTests.ContentService;
 
-public class ProgramTests
+public class Program_Tests
 {
     [Fact]
     public void Can_create_an_instance_of_Program()

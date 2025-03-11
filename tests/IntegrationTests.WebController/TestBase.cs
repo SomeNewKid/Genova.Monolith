@@ -8,11 +8,11 @@ using Genova.ContentService.Protos;
 
 namespace IntegrationTests.WebController;
 
-public class WebControllerTestBase : IClassFixture<WebApplicationFactory<Program>>
+public class TestBase : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
 
-    public WebControllerTestBase(WebApplicationFactory<Program> factory)
+    public TestBase(WebApplicationFactory<Program> factory)
     {
         _factory = factory;
     }

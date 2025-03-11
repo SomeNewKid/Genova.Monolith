@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option csharp_namespace = "Genova.ContentService.Protos";
+
+package genova.content;
+
+// Content retrieval service
+service Content {
+    // Fetches content for a given culture and URL path
+    rpc FetchContent (ContentRequest) returns (ContentResponse);
+}
+
+// Request containing culture and URL path
+message ContentRequest {
+    string culture = 1;
+    string urlPath = 2;
+}
+
+// Response containing the JSON content
+message ContentResponse {
+    string content = 1;
+}

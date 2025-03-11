@@ -3,12 +3,12 @@ using Genova.SecurityService.Protos;
 
 namespace Genova.SecurityService.Services;
 
-public class AuthService : Auth.AuthBase
+public class SecurityService : Security.SecurityBase 
 {
     private readonly IJwtService _jwtService;
-    private readonly IUserService _userService; // Service to validate user credentials
+    private readonly IUserService _userService;
 
-    public AuthService(IJwtService jwtService, IUserService userService)
+    public SecurityService(IJwtService jwtService, IUserService userService)
     {
         _jwtService = jwtService;
         _userService = userService;
@@ -19,27 +19,28 @@ public class AuthService : Auth.AuthBase
         return Task.FromResult(new PingResponse { Message = "SecurityService is alive!" });
     }
 
-    // ✅ Authenticate Method: Validate username & password, return JWT
-    public override Task<AuthResponse> Authenticate(AuthRequest request, ServerCallContext context)
+    public override Task<AuthResponse> Authenticate
+        (AuthRequest request, ServerCallContext context)
     {
-        var user = _userService.ValidateUser(request.Username, request.Password);
+        User? user = _userService.ValidateUser(request.Username, request.Password);
 
         if (user == null)
         {
-            throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid username or password"));
+            Status status = new(StatusCode.Unauthenticated, "Invalid username or password");
+            throw new RpcException(status);
         }
 
-        var token = _jwtService.GenerateToken(user.Username, user.Roles);
+        string token = _jwtService.GenerateToken(user.Username, user.Roles);
 
         return Task.FromResult(new AuthResponse { Token = token });
     }
 
-    // ✅ ValidateToken Method: Validate JWT and return user details
-    public override Task<TokenResponse> ValidateToken(TokenRequest request, ServerCallContext context)
+    public override Task<TokenResponse> ValidateToken(
+        TokenRequest request, ServerCallContext context)
     {
-        var validationResult = _jwtService.ValidateToken(request.Token);
+        TokenValidationResult validationResult = _jwtService.ValidateToken(request.Token);
 
-        if (request.Token == "invalid-jwt")
+        if (request.Token == "invalid-jwt") // hack for unit testing
         {
             return Task.FromResult(new TokenResponse
             {

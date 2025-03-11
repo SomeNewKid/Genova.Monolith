@@ -4,23 +4,24 @@ namespace Genova.SecurityService;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static void Main(string[] args) 
     {
-        var builder = WebApplication.CreateBuilder(args);
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        IServiceCollection services = builder.Services;
 
-        // Add services to the container.
-        builder.Services.AddGrpc();
+        _ = services.AddGrpc();
 
-        // ✅ Register authentication services
-        builder.Services.AddSingleton<IJwtService, JwtService>();
-        builder.Services.AddSingleton<IUserService, UserService>();
+        _ = services.AddSingleton<IJwtService, JwtService>();
+        _ = services.AddSingleton<IUserService, UserService>();
 
-        var app = builder.Build();
+        WebApplication app = builder.Build();
 
-        // Configure the HTTP request pipeline.
-        app.MapGrpcService<AuthService>();
+        _ = app.MapGrpcService<Services.SecurityService>();
 
-        app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+        _ = app.MapGet("/", () =>
+            "Communication with gRPC endpoints must be made through a gRPC client. " +
+            "To learn how to create a client, visit: " +
+            "https://go.microsoft.com/fwlink/?linkid=2086909");
 
         app.Run();
     }

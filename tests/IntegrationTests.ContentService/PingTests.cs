@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using Xunit;
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Grpc.Net.Client;
 using Genova.ContentService;
 using Genova.ContentService.Protos;
@@ -19,15 +17,16 @@ public class PingTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Ping_should_return_success_message()
     {
-        // ✅ Start in-memory test server
-        using var client = _factory.CreateDefaultClient();
-        using var channel = GrpcChannel.ForAddress(client.BaseAddress!, new GrpcChannelOptions { HttpClient = client });
-        var grpcClient = new Content.ContentClient(channel);
+        HttpClient client = _factory.CreateDefaultClient();
+        using (GrpcChannel channel = GrpcChannel.ForAddress(
+            client.BaseAddress!,
+            new GrpcChannelOptions { HttpClient = client })) 
+        {
+            Content.ContentClient grpcClient = new(channel);
 
-        // ✅ Call Ping
-        var response = await grpcClient.PingAsync(new PingRequest());
+            PingResponse response = await grpcClient.PingAsync(new PingRequest());
 
-        // ✅ Validate response
-        Assert.Equal("ContentService is alive!", response.Message);
+            Assert.Equal("ContentService is alive!", response.Message);
+        }
     }
 }

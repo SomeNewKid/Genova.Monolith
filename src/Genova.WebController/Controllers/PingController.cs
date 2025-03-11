@@ -8,22 +8,23 @@ namespace Genova.WebController.Controllers;
 public class PingController : Controller
 {
     private readonly Content.ContentClient _contentClient;
-    private readonly Auth.AuthClient _authClient;
+    private readonly Security.SecurityClient _securityClient;
 
-    public PingController(Auth.AuthClient authClient, Content.ContentClient contentClient)
+    public PingController(Security.SecurityClient securityClient, Content.ContentClient contentClient)
     {
-        _authClient = authClient;
+        _securityClient = securityClient;
         _contentClient = contentClient;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var authMessage = "";
+        string authMessage;
         try
         {
-            var authRequest = new SecurityService.Protos.PingRequest();
-            var authResponse = await _authClient.PingAsync(authRequest);
+            SecurityService.Protos.PingRequest authRequest = new ();
+            SecurityService.Protos.PingResponse authResponse = 
+                await _securityClient.PingAsync(authRequest);
             authMessage = authResponse.Message;
             if (string.IsNullOrWhiteSpace(authMessage))
             {
@@ -35,11 +36,12 @@ public class PingController : Controller
             authMessage = $"SecurityService error: {exception.Message}";
         }
 
-        var contentMessage = "";
+        string contentMessage;
         try
         {
-            var contentRequest = new ContentService.Protos.PingRequest();
-            var contentResponse = await _contentClient.PingAsync(contentRequest);
+            ContentService.Protos.PingRequest contentRequest = new ();
+            ContentService.Protos.PingResponse contentResponse = 
+                await _contentClient.PingAsync(contentRequest);
             contentMessage = contentResponse.Message;
             if (string.IsNullOrWhiteSpace(contentMessage))
             {

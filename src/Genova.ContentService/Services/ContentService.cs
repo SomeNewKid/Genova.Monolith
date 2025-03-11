@@ -11,7 +11,8 @@ public class ContentService : Content.ContentBase
         return Task.FromResult(new PingResponse { Message = "ContentService is alive!" });
     }
 
-    public override Task<ContentResponse> FetchContent(ContentRequest request, ServerCallContext context)
+    public override Task<ContentResponse> FetchContent
+        (ContentRequest request, ServerCallContext context)
     {
         string jsonResponse = """
         {
@@ -56,7 +57,7 @@ public class ContentService : Content.ContentBase
                         {
                             "name": "body",
                             "type": "RichTextField",
-                            "value": "<p>We are an award-winning company with offices around the globe. Our mission is to provide outstanding services to all our clients.</p>"
+                            "value": "<p>We are an <strong>award-winning</strong> company.</p>"
                         }
                     ]
                 },

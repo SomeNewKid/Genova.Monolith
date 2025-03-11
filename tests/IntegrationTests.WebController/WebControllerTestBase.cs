@@ -18,20 +18,20 @@ public class WebControllerTestBase : IClassFixture<WebApplicationFactory<Program
     }
 
     protected HttpClient CreateClientWithMocks(
-        Mock<Auth.AuthClient>? authMock = null,
+        Mock<Security.SecurityClient>? authMock = null,
         Mock<Content.ContentClient>? contentMock = null)
     {
         return _factory.WithWebHostBuilder(builder =>
         {
-            builder.ConfigureTestServices(services =>
+            _ = builder.ConfigureTestServices(services =>
             {
                 if (authMock != null)
                 {
-                    services.AddSingleton(authMock.Object);
+                    _ = services.AddSingleton(authMock.Object);
                 }
                 if (contentMock != null)
                 {
-                    services.AddSingleton(contentMock.Object);
+                    _ = services.AddSingleton(contentMock.Object);
                 }
             });
         }).CreateClient();

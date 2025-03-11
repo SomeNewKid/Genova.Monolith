@@ -17,17 +17,18 @@ public class PingTests : IClassFixture<WebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task Ping_should_return_success_message()
+    public async Task Ping_should_return_success_message() 
     {
-        // ✅ Start in-memory test server
-        using var client = _factory.CreateDefaultClient();
-        using var channel = GrpcChannel.ForAddress(client.BaseAddress!, new GrpcChannelOptions { HttpClient = client });
-        var grpcClient = new Auth.AuthClient(channel);
+        HttpClient client = _factory.CreateDefaultClient();
+        using (GrpcChannel channel = GrpcChannel.ForAddress(
+            client.BaseAddress!,
+            new GrpcChannelOptions { HttpClient = client })) 
+        {
+            Security.SecurityClient grpcClient = new(channel);
 
-        // ✅ Call Ping
-        var response = await grpcClient.PingAsync(new PingRequest());
+            PingResponse response = await grpcClient.PingAsync(new PingRequest());
 
-        // ✅ Validate response
-        Assert.Equal("SecurityService is alive!", response.Message);
+            Assert.Equal("SecurityService is alive!", response.Message);
+        }
     }
 }

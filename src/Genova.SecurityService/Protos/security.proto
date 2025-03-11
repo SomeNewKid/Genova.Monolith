@@ -2,7 +2,7 @@
 
 option csharp_namespace = "Genova.SecurityService.Protos";
 
-service Auth {
+service Security {
     // Health check method
     rpc Ping (PingRequest) returns (PingResponse);
 

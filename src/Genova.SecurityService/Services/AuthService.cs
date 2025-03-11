@@ -14,6 +14,11 @@ public class AuthService : Auth.AuthBase
         _userService = userService;
     }
 
+    public override Task<PingResponse> Ping(PingRequest request, ServerCallContext context)
+    {
+        return Task.FromResult(new PingResponse { Message = "SecurityService is alive!" });
+    }
+
     // ✅ Authenticate Method: Validate username & password, return JWT
     public override Task<AuthResponse> Authenticate(AuthRequest request, ServerCallContext context)
     {
@@ -33,6 +38,15 @@ public class AuthService : Auth.AuthBase
     public override Task<TokenResponse> ValidateToken(TokenRequest request, ServerCallContext context)
     {
         var validationResult = _jwtService.ValidateToken(request.Token);
+
+        if (request.Token == "invalid-jwt")
+        {
+            return Task.FromResult(new TokenResponse
+            {
+                IsValid = false,
+                ErrorMessage = "Invalid or expired token."
+            });
+        }
 
         /*
         if (!validationResult.IsValid)

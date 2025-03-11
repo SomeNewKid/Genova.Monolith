@@ -3,11 +3,20 @@
 option csharp_namespace = "Genova.SecurityService.Protos";
 
 service Auth {
+    // Health check method
+    rpc Ping (PingRequest) returns (PingResponse);
+
     // Authenticate user with username/password → Returns a JWT
     rpc Authenticate (AuthRequest) returns (AuthResponse);
 
     // Validate an existing JWT and return user details
     rpc ValidateToken (TokenRequest) returns (TokenResponse);
+}
+
+message PingRequest {}
+
+message PingResponse {
+    string message = 1;
 }
 
 message AuthRequest {

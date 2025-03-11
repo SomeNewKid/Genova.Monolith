@@ -5,6 +5,12 @@ namespace Genova.ContentService.Services;
 
 public class ContentService : Content.ContentBase
 {
+
+    public override Task<PingResponse> Ping(PingRequest request, ServerCallContext context)
+    {
+        return Task.FromResult(new PingResponse { Message = "ContentService is alive!" });
+    }
+
     public override Task<ContentResponse> FetchContent(ContentRequest request, ServerCallContext context)
     {
         string jsonResponse = """

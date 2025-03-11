@@ -6,8 +6,17 @@ package genova.content;
 
 // Content retrieval service
 service Content {
+    // Health check method
+    rpc Ping (PingRequest) returns (PingResponse);
+
     // Fetches content for a given culture and URL path
     rpc FetchContent (ContentRequest) returns (ContentResponse);
+}
+
+message PingRequest {}
+
+message PingResponse {
+    string message = 1;
 }
 
 // Request containing culture and URL path

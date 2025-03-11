@@ -36,10 +36,11 @@ public class HomeController : Controller
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Authentication Result</title>
+            <title>Test Page</title>
         </head>
         <body>
-            <h1>{(tokenResponse.IsValid ? "Welcome, " + tokenResponse.Username : "Invalid Token")}</h1>
+            <h1>Test Page</h1>
+            <h2>{(tokenResponse.IsValid ? "Welcome, " + tokenResponse.Username : "Invalid Token")}</h2>
             <p>{(tokenResponse.IsValid ? $"Roles: {string.Join(", ", tokenResponse.Roles)}" : tokenResponse.ErrorMessage)}</p>
             <textarea style="width:80%;height:400px;font-family:monospace">{contentResponse.Content}</textarea>
         </body>

@@ -17,11 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\auth.proto" GrpcServices="Client" />
+    <Protobuf Include="Protos\auth.proto" GrpcServices="Both" />
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\content.proto" GrpcServices="Client" />
+    <Protobuf Include="Protos\content.proto" GrpcServices="Both" />
   </ItemGroup>
 
   <ItemGroup>

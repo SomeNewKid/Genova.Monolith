@@ -42,5 +42,5 @@ public interface IComponent
     /// <returns>
     /// An IEnumerable of error messages. An empty collection implies no validation errors.
     /// </returns>
-    IEnumerable<string> Validate();
+    IEnumerable<string> Validate(ValidationMode validationMode);
 }

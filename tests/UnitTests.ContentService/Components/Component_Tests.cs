@@ -1,5 +1,6 @@
 ﻿using Genova.ContentService.Components;
 using Genova.ContentService.Templates;
+using System.Xml.Linq;
 
 namespace UnitTests.ContentService.Components;
 
@@ -14,9 +15,10 @@ public class Component_Tests
         public override string ComponentType => "ParentType";
 
         // Example: if Key == "BadParentKey", we produce an error
-        public override IEnumerable<string> Validate()
+        public override IEnumerable<string> Validate(ValidationMode validationMode)
         {
-            foreach (var err in base.Validate())
+            // Call the base class with the same validationMode
+            foreach (var err in base.Validate(validationMode))
                 yield return err;
 
             if (Key == "BadParentKey")
@@ -47,9 +49,9 @@ public class Component_Tests
         }
 
         // Example: if Key == "InvalidChildKey", we produce an error
-        public override IEnumerable<string> Validate()
+        public override IEnumerable<string> Validate(ValidationMode validationMode)
         {
-            foreach (var err in base.Validate())
+            foreach (var err in base.Validate(validationMode))
                 yield return err;
 
             if (Key == "InvalidChildKey")
@@ -73,6 +75,20 @@ public class Component_Tests
         }
 
         public override string ComponentType => "TestTemplate";
+
+        // For simplicity, we won't add a TemplateMode here – 
+        // the tests focus on structural checks only.
+
+        public TemplateMode Mode => TemplateMode.Definition;
+        public void MarkPopulated() => throw new NotImplementedException();
+
+        public IEnumerable<string> Validate()
+        {
+            var mode = (Mode == TemplateMode.Definition)
+                ? ValidationMode.Definition
+                : ValidationMode.Content;
+            return Validate(mode);
+        }
     }
 
     [Fact]
@@ -192,7 +208,6 @@ public class Component_Tests
         // midChild has a nested leaf
         var leafChild = new TestChildComponent("LeafType");
         leafChild.SetKey("leaf1");
-        // Leaf has no children, so midChild remains a single-level child
         midChild.AddNestedChild(leafChild);
 
         // Act
@@ -211,8 +226,8 @@ public class Component_Tests
     [Fact]
     public void Template_still_cannot_add_child_of_same_type()
     {
-        // Even though it's a template, we still don't allow the child to have the same component type
-        // as the parent.
+        // Even though it's a template, we still don't allow 
+        // the child to have the same component type as the parent.
 
         // Arrange
         var template = new TestTemplate();
@@ -260,7 +275,7 @@ public class Component_Tests
         parent.SetKey("BadParentKey");
 
         // Act
-        var errors = parent.Validate().ToList();
+        var errors = parent.Validate(ValidationMode.Definition).ToList();
 
         // Assert
         Assert.Single(errors);
@@ -275,7 +290,7 @@ public class Component_Tests
         child.SetKey("InvalidChildKey");
 
         // Act
-        var errors = child.Validate().ToList();
+        var errors = child.Validate(ValidationMode.Definition).ToList();
 
         // Assert
         Assert.Single(errors);

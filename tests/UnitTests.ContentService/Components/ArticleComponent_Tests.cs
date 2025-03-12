@@ -1,4 +1,7 @@
-﻿using Genova.ContentService.Components;
+﻿using System;
+using System.Linq;
+using Xunit;
+using Genova.ContentService.Components;
 using Genova.ContentService.Fields;
 
 namespace UnitTests.ContentService.Components;
@@ -68,6 +71,7 @@ public class ArticleComponent_Tests
         // Assert
         Assert.Empty(children);
     }
+
     [Fact]
     public void No_key_yields_error_from_base_class()
     {
@@ -76,7 +80,8 @@ public class ArticleComponent_Tests
         // We intentionally do NOT call SetKey
 
         // Act
-        var errors = article.Validate().ToArray();
+        // We pass Content mode so that "title cannot be empty" might also appear.
+        var errors = article.Validate(ValidationMode.Content).ToArray();
 
         // Assert
         Assert.Contains(
@@ -96,7 +101,7 @@ public class ArticleComponent_Tests
         // so we expect "Title cannot be empty."
 
         // Act
-        var errors = article.Validate().ToList();
+        var errors = article.Validate(ValidationMode.Content).ToList();
 
         // Assert
         Assert.Contains(
@@ -117,7 +122,7 @@ public class ArticleComponent_Tests
         titleField?.SetValue("My Great Article");
 
         // Act
-        var errors = article.Validate().ToList();
+        var errors = article.Validate(ValidationMode.Content).ToList();
 
         // Assert
         Assert.Empty(errors);
@@ -132,7 +137,7 @@ public class ArticleComponent_Tests
         // The 'title' field is also empty => error #2
 
         // Act
-        var errors = article.Validate().ToArray();
+        var errors = article.Validate(ValidationMode.Content).ToArray();
 
         // Assert
         Assert.True(errors.Length >= 2, "We expect at least 2 errors.");

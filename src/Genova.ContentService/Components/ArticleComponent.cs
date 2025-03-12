@@ -29,15 +29,18 @@ public class ArticleComponent : Component
         AddField(imageField);
     }
 
-    public override IEnumerable<string> Validate()
+    public override IEnumerable<string> Validate(ValidationMode validationMode)
     {
-        foreach (var error in base.Validate())
+        foreach (var error in base.Validate(validationMode))
             yield return error;
 
-        var titleField = this.Fields.SingleOrDefault(f => f.Key == "title");
-        if (titleField != null && string.IsNullOrEmpty(titleField.GetValue()))
+        if (validationMode == ValidationMode.Content)
         {
-            yield return "Title cannot be empty.";
+            var titleField = this.Fields.SingleOrDefault(f => f.Key == "title");
+            if (titleField != null && string.IsNullOrEmpty(titleField.GetValue()))
+            {
+                yield return "Title cannot be empty.";
+            }
         }
     }
 

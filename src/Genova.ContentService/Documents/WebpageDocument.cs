@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Genova.ContentService.Components;
+using System;
 using System.Collections.Generic;
 
 namespace Genova.ContentService.Documents;

@@ -77,7 +77,7 @@ public abstract class Component : IComponent
             throw new ArgumentNullException(nameof(child));
 
         // 1) Validate the child before any further checks
-        var childErrors = child.Validate().ToList();
+        var childErrors = child.Validate(ValidationMode.Definition).ToList();
         if (childErrors.Any())
         {
             var combined = string.Join("; ", childErrors);
@@ -134,7 +134,7 @@ public abstract class Component : IComponent
     /// Subclasses can override this if they need more specialized checks.
     /// </summary>
     /// <returns>An IEnumerable of error messages; empty if the component is valid.</returns>
-    public virtual IEnumerable<string> Validate()
+    public virtual IEnumerable<string> Validate(ValidationMode validationMode)
     {
         // Basic check: Key must not be empty
         if (string.IsNullOrWhiteSpace(this.Key))
@@ -145,7 +145,7 @@ public abstract class Component : IComponent
         // Recurse into children
         foreach (var child in _children)
         {
-            foreach (var childError in child.Validate())
+            foreach (var childError in child.Validate(validationMode))
             {
                 yield return childError;
             }

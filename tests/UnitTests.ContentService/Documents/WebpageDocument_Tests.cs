@@ -1,6 +1,6 @@
 ﻿using Genova.ContentService.Documents;
 
-namespace UnitTests.ContentService.Documents;
+namespace UnitTests.ValuesService.Documents;
 
 public class WebpageDocument_Tests
 {
@@ -57,13 +57,13 @@ public class WebpageDocument_Tests
     }
 
     [Fact]
-    public void Content_dictionary_is_empty_initially()
+    public void Values_dictionary_is_empty_initially()
     {
         // Arrange
         var webpage = new WebpageDocument();
 
         // Act
-        var contentDict = webpage.Content;
+        var contentDict = webpage.Values;
 
         // Assert
         Assert.Empty(contentDict);
@@ -76,12 +76,12 @@ public class WebpageDocument_Tests
         var webpage = new WebpageDocument();
 
         // Act
-        webpage.Content["article.title"] = "Hello World";
-        webpage.Content["article.body"] = "Some body text...";
+        webpage.Values["article.title"] = "Hello World";
+        webpage.Values["article.body"] = "Some body text...";
 
         // Assert
-        Assert.Equal("Hello World", webpage.Content["article.title"]);
-        Assert.Equal("Some body text...", webpage.Content["article.body"]);
+        Assert.Equal("Hello World", webpage.Values["article.title"]);
+        Assert.Equal("Some body text...", webpage.Values["article.body"]);
     }
 
     [Fact]

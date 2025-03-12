@@ -1,8 +1,4 @@
-﻿using Genova.ContentService.Components;
-using System;
-using System.Collections.Generic;
-
-namespace Genova.ContentService.Documents;
+﻿namespace Genova.ContentService.Documents;
 
 public class WebpageDocument : Document
 {
@@ -17,14 +13,6 @@ public class WebpageDocument : Document
         get => _templateId;
         set => _templateId = value;
     }
-
-    /// <summary>
-    /// A dictionary storing this webpage's specific content,
-    /// such as "article.title" => "Hello World",
-    /// which is distinct from the base <see cref="Values"/> dictionary
-    /// if you want to separate general metadata from page-specific fields.
-    /// </summary>
-    public Dictionary<string, string> Content { get; } = new();
 
     /// <summary>
     /// Validates that the document's ID is not empty and that TemplateId is non-null and non-empty.

@@ -5,75 +5,81 @@ namespace Genova.ContentService.Templates;
 
 /// <summary>
 /// Populates an ITemplate with data from an IDocument’s Values dictionary.
-/// Each key in the dictionary is parsed to locate the target component
-/// (by 'componentKey') and field (by 'fieldKey'), then SetValue is called
-/// on the matching field. Finally, MarkPopulated is called on the template.
+/// This version ensures a "MetadataComponent" with key "__metadata"
+/// exists in the template for fallback assignment when no dot is found.
 /// </summary>
 public class TemplatePopulator
 {
-    /// <summary>
-    /// Reads the doc.Values dictionary, for each entry:
-    ///  - If the key has no dot, it references a field on the root template.
-    ///  - If the key is like "component.field", it references a named child component's field.
-    ///  - If the key has multiple dots, only the first dot is used (i.e. "component.field.more" is partial).
-    /// Then sets the field's value. Skips missing components or fields silently (or throws if desired).
-    /// Finally calls template.MarkPopulated().
-    /// </summary>
-    /// <param name="template">The root ITemplate to populate.</param>
-    /// <param name="doc">The IDocument holding the key/value data.</param>
     public void Populate(ITemplate template, IDocument doc)
     {
+        // 1) Ensure we have a MetadataComponent with key="__metadata"
+        var metadataComp = FindOrCreateMetadataComponent(template, "__metadata");
+
+        // 2) For each KV in doc.Values, parse and set the appropriate field.
         foreach (var kvp in doc.Values)
         {
-            var key = kvp.Key;    // e.g. "article.title"
-            var value = kvp.Value;
+            var (componentKey, fieldKey) = ParseKey(kvp.Key);
+            var rawValue = kvp.Value;
 
-            // Parse the key to separate component vs. field
-            var (componentKey, fieldKey) = ParseKey(key);
-
-            // If componentKey is null => we set the field on the root template
-            // else => we find the child component by that key
-            IComponent targetComponent;
             if (string.IsNullOrEmpty(componentKey))
             {
-                // It's a field of the template itself
-                targetComponent = template;
+                // No dot => root-level field or fallback to metadata
+                // Attempt to find in the root template first
+                var field = template.Fields
+                    .SingleOrDefault(f => f.Key.Equals(fieldKey, StringComparison.OrdinalIgnoreCase));
+
+                if (field != null)
+                {
+                    field.SetValue(rawValue);
+                }
+                else
+                {
+                    // fallback to metadata component
+                    var metaField = metadataComp.Fields
+                        .SingleOrDefault(f => f.Key.Equals(fieldKey, StringComparison.OrdinalIgnoreCase));
+                    if (metaField != null)
+                    {
+                        metaField.SetValue(rawValue);
+                    }
+                    else
+                    {
+                        // If not found, we skip or log a warning
+                        continue;
+                    }
+                }
             }
             else
             {
-                // Find a child component (recursively) by name
-                targetComponent = FindComponent(template, componentKey);
-                if (targetComponent == null)
+                // we have componentKey + fieldKey
+                IComponent? targetComp = FindComponent(template, componentKey);
+                if (targetComp == null)
                 {
-                    // If you prefer to skip silently, remove the throw or log a warning
-                    // For demonstration, let's just skip in this example.
+                    // skip if not found
                     continue;
                 }
+
+                var field = targetComp.Fields
+                    .SingleOrDefault(f => f.Key.Equals(fieldKey, StringComparison.OrdinalIgnoreCase));
+
+                if (field == null)
+                {
+                    // skip if not found
+                    continue;
+                }
+
+                field.SetValue(rawValue);
             }
-
-            // Now find the field in targetComponent
-            var field = targetComponent.Fields
-                .SingleOrDefault(f => f.Key.Equals(fieldKey, StringComparison.OrdinalIgnoreCase));
-
-            if (field == null)
-            {
-                // skip or throw
-                continue;
-            }
-
-            // Set the field's value
-            field.SetValue(value);
         }
 
-        // Now that we’ve populated all known fields, switch the template to Populated mode
+        // 3) Once complete, mark the template as populated
         template.MarkPopulated();
     }
 
     /// <summary>
     /// Splits a dictionary key into (componentKey, fieldKey).
-    /// If no dot is found, returns (null, originalKey).
+    /// If no dot is found, returns (null, key).
     /// If exactly one dot, returns (leftPart, rightPart).
-    /// If multiple dots, only the first dot is used (rest is appended to the 'fieldKey' or ignored).
+    /// If multiple dots, only the first dot is used in this example.
     /// </summary>
     private (string? componentKey, string fieldKey) ParseKey(string rawKey)
     {
@@ -87,35 +93,49 @@ public class TemplatePopulator
             return (null, rawKey);
         }
 
-        // If you want to handle multiple dots, you can modify logic or parse further
-        var left = rawKey.Substring(0, idx);          // e.g. "article"
-        var right = rawKey.Substring(idx + 1);        // e.g. "title"
+        var left = rawKey.Substring(0, idx);
+        var right = rawKey.Substring(idx + 1);
         return (left, right);
     }
 
     /// <summary>
-    /// Recursively searches the template’s child components for a component
+    /// Recursively searches the template’s child components for one
     /// whose Key matches 'componentKey' (case-insensitive). Returns null if not found.
+    /// Includes the template root if it matches.
     /// </summary>
     private IComponent? FindComponent(IComponent root, string componentKey)
     {
-        // if root has the desired key, return root
+        // if root matches
         if (root.Key.Equals(componentKey, StringComparison.OrdinalIgnoreCase))
-        {
             return root;
-        }
 
-        // else search children recursively
+        // search children
         foreach (var child in root.Children)
         {
             var match = FindComponent(child, componentKey);
             if (match != null)
-            {
                 return match;
-            }
         }
 
-        // no match
         return null;
+    }
+
+    /// <summary>
+    /// Finds or creates a MetadataComponent with the specified key (e.g., "__metadata")
+    /// as a child of the root template, if it doesn’t already exist.
+    /// </summary>
+    private IComponent FindOrCreateMetadataComponent(ITemplate template, string metadataKey)
+    {
+        // Check if there's an existing child with that key
+        var existing = FindComponent(template, metadataKey);
+        if (existing != null)
+            return existing;
+
+        // else create a new MetadataComponent
+        var meta = new MetadataComponent();
+        meta.SetKey(metadataKey);
+        template.AddChild(meta);
+
+        return meta;
     }
 }

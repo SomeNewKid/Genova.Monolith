@@ -45,7 +45,7 @@ public abstract class Component : IComponent
     /// Allows derived classes to add a field to the collection.
     /// The field's <see cref="IField.Key"/> should be unique within this component.
     /// </summary>
-    protected void AddField(IField field)
+    public void AddField(IField field)
     {
         if (field == null)
             throw new ArgumentNullException(nameof(field));

@@ -1,6 +1,6 @@
 ﻿namespace Genova.ContentService.Documents;
 
-public class WebpageDocument : Document
+public class WebpageDocument : Document, IWebpageDocument
 {
     private Guid? _templateId = null;
 

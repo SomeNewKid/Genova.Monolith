@@ -1,6 +1,6 @@
 ﻿namespace Genova.ContentService.Fields; 
 
-public interface IField 
+public interface IField
 {
     string Key { get; }
 

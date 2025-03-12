@@ -1,4 +1,8 @@
-﻿using Genova.ContentService.Components;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using Xunit;
+using Genova.ContentService.Components;
 using Genova.ContentService.Documents;
 using Genova.ContentService.Fields;
 using Genova.ContentService.Templates;
@@ -71,13 +75,8 @@ public class TemplatePopulator_Tests
 
         public override string ComponentType => _type;
 
-        // For convenience, let's add a single field:
-        public void AddField(string fieldKey, IField field)
-        {
-            field.SetKey(fieldKey);
-            base.AddField(field);
-        }
-
+        // We can add fields via the public AddField method from IComponent
+        // if we need them for testing
         public override IEnumerable<string> Validate(ValidationMode validationMode)
         {
             // Minimal. 
@@ -115,12 +114,7 @@ public class TemplatePopulator_Tests
         // Add a field directly to the template
         var textField = new TextField();
         textField.SetKey("pageTitle");
-        // We'll cheat and call protected AddField via reflection or
-        // define a method in TestTemplate, but let's do it simple:
-        template.GetType().BaseType!.GetMethod("AddField",
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.NonPublic)!
-            .Invoke(template, new object[] { textField });
+        template.AddField(textField);
 
         var doc = new TestDocument();
         doc.SetId(Guid.NewGuid());
@@ -147,7 +141,10 @@ public class TemplatePopulator_Tests
         // child component with Key="article"
         var articleComp = new TestChildComponent("ArticleComp", "article");
         // add a field "title"
-        articleComp.AddField("title", new TextField());
+        var titleField = new TextField();
+        titleField.SetKey("title");
+        articleComp.AddField(titleField);
+
         template.AddChild(articleComp);
 
         var doc = new TestDocument();
@@ -183,12 +180,28 @@ public class TemplatePopulator_Tests
         populator.Populate(template, doc);
 
         // Assert
-        // No exceptions, no fields set. 
-        // The root has no field "sidebar.title", no child "sidebar"
-        // We just confirm it didn't crash. 
+        // Because the populator inserts a __metadata child, 
+        // we expect exactly one child with Key="__metadata", not "sidebar".
+        Assert.Single(template.Children);
+        var child = template.Children[0];
+        Assert.Equal("__metadata", child.Key);
+        Assert.IsType<MetadataComponent>(child);
+
+        // No fields were set on the root template
         Assert.Empty(template.Fields);
-        Assert.Empty(template.Children);
+
+        // The doc's "sidebar.title" key was not recognized, 
+        // so the fallback metadata child also doesn't have it:
+        var metaDescriptionField = child.Fields.SingleOrDefault(f => f.Key == "description");
+        var metaTitleField = child.Fields.SingleOrDefault(f => f.Key == "title");
+
+        // By default, metadata has "title" and "description" fields but they remain empty
+        if (metaDescriptionField != null)
+            Assert.Equal(string.Empty, metaDescriptionField.GetValue());
+        if (metaTitleField != null)
+            Assert.Equal(string.Empty, metaTitleField.GetValue());
     }
+
 
     [Fact]
     public void Populate_ignores_unknown_field()
@@ -200,7 +213,9 @@ public class TemplatePopulator_Tests
 
         // Child with key="article" but no field "subtitle"
         var articleComp = new TestChildComponent("ArticleComp", "article");
-        articleComp.AddField("title", new TextField());
+        var titleField = new TextField();
+        titleField.SetKey("title");
+        articleComp.AddField(titleField);
         template.AddChild(articleComp);
 
         var doc = new TestDocument();
@@ -278,7 +293,9 @@ public class TemplatePopulator_Tests
 
         // child component with key="article"
         var articleComp = new TestChildComponent("ArticleComp", "article");
-        articleComp.AddField("title.more", new TextField());
+        var extendedField = new TextField();
+        extendedField.SetKey("title.more");
+        articleComp.AddField(extendedField);
         template.AddChild(articleComp);
 
         var doc = new TestDocument();
@@ -291,14 +308,10 @@ public class TemplatePopulator_Tests
         populator.Populate(template, doc);
 
         // Assert
-        // "article.title.more.stuff" => parse => (component="article", field="title.more.stuff"??)
+        // "article.title.more.stuff" => parse => (component="article", field="title.more.stuff")
         // The example code only splits on the FIRST dot, so fieldKey = "title.more.stuff"
-        // We won't have an exact fieldKey unless we made "title.more.stuff" or handle partial parse
-        // So in this example, let's say we made "title.more" -> won't match "title.more.stuff"
+        // We won't have an exact fieldKey unless we made "title.more.stuff" 
         // => it gets ignored
-        // For demonstration, let's confirm no exceptions
-        var field = articleComp.Fields.Single(f => f.Key == "title.more");
-        // It's still empty because we didn't find "title.more" == "title.more.stuff"
-        Assert.Equal(string.Empty, field.GetValue());
+        Assert.Equal(string.Empty, extendedField.GetValue());
     }
 }

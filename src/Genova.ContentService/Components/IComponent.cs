@@ -27,10 +27,14 @@ public interface IComponent
     /// </summary>
     IReadOnlyList<IField> Fields { get; }
 
+    void AddField(IField field);
+
     /// <summary>
     /// An ordered list of child components, each of which also has a name and fields.
     /// </summary>
     IReadOnlyList<IComponent> Children { get; }
+
+    void AddChild(IComponent child);
 
     void SetKey(string key);
 

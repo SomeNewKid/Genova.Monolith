@@ -1,11 +1,14 @@
-﻿public interface IField 
+﻿namespace Genova.ContentService.Fields; 
+
+public interface IField 
 {
-    string Id { get; set; }
-    string Name { get; set; }
+    string Key { get; }
 
     string FieldType { get; }
 
     void SetValue(string? value);
 
     string GetValue();
+
+    void SetKey(string key);
 }
